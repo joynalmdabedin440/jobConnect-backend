@@ -29,7 +29,8 @@ async function run() {
     await client.db("admin").command({ ping: 1 });
       console.log("Pinged your deployment. You successfully connected to MongoDB!");
 
-      const jobsData = client.db('jobConnect').collection('jobs')
+    const jobsData = client.db('jobConnect').collection('jobs')
+    const jobApplications=client.db("jobConnect").collection("applications")
 
       //jobs data api
 
@@ -53,6 +54,12 @@ async function run() {
       res.send(result)
 
 
+    })
+    //job application api
+    app.post('/applications', async (req, res) => {
+      const application = req.body
+      const result = await jobApplications.insertOne(application)
+      res.send(result)
     })
 
 
