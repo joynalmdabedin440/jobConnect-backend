@@ -1,6 +1,7 @@
 const express = require('express')
 const cors = require('cors')
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+const { use } = require('react');
 require('dotenv').config()
 const app = express()
 const port = process.env.PORT || 3000
@@ -60,6 +61,18 @@ async function run() {
       const application = req.body
       const result = await jobApplications.insertOne(application)
       res.send(result)
+    })
+
+    //get applications by email
+    app.get('/applications', async (req, res) => { 
+      const email = req.query.email
+      const query = { userEmail: email }
+
+      const result = await jobApplications.find(query).toArray()
+      res.send(result)
+
+      
+
     })
 
 
