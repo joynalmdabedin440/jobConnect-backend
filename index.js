@@ -1,7 +1,6 @@
 const express = require('express')
 const cors = require('cors')
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
-const { use } = require('react');
 require('dotenv').config()
 const app = express()
 const port = process.env.PORT || 3000
@@ -28,28 +27,28 @@ async function run() {
     await client.connect();
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
-      console.log("Pinged your deployment. You successfully connected to MongoDB!");
+    console.log("Pinged your deployment. You successfully connected to MongoDB!");
 
     const jobsData = client.db('jobConnect').collection('jobs')
-    const jobApplications=client.db("jobConnect").collection("applications")
+    const jobApplications = client.db("jobConnect").collection("applications")
 
-      //jobs data api
+    //jobs data api
 
-      app.get('/jobs', async (req, res) => {
-        const cursor = jobsData.find()
-        
-        
-          const result = await cursor.toArray()
+    app.get('/jobs', async (req, res) => {
+      const cursor = jobsData.find()
 
-          res.send(result)
-      })
-    
+
+      const result = await cursor.toArray()
+
+      res.send(result)
+    })
+
     app.get('/jobs/:id', async (req, res) => {
-      
+
       let id = req.params.id
-      
-      let query = {_id: new ObjectId(id)}
-      
+
+      let query = { _id: new ObjectId(id) }
+
       const result = await jobsData.findOne(query)
 
       res.send(result)
@@ -64,19 +63,38 @@ async function run() {
     })
 
     //get applications by email
-    app.get('/applications', async (req, res) => { 
+    app.get('/applications', async (req, res) => {
       const email = req.query.email
       const query = { userEmail: email }
 
       const result = await jobApplications.find(query).toArray()
+
+      for (let application of result) {
+        let jobId = application.jobId
+        const query2 = { _id: new ObjectId(jobId) }
+        let job = await jobsData.findOne(query2)
+        application.title = job.title
+        application.location = job.location
+        application.company = job.company
+        application.logo = job.company_logo
+        application.applicationDeadline = job.applicationDeadline
+        application.appliedTime = job._id.getTimestamp().toLocaleDateString()
+
+
+
+
+      }
+
+
+
       res.send(result)
 
-      
+
 
     })
 
 
-      
+
 
 
   } finally {
@@ -89,11 +107,11 @@ run().catch(console.dir);
 
 
 app.get("/", (req, res) => {
-    res.send("running successfully")
+  res.send("running successfully")
 })
 
 
 app.listen(port, () => {
-    console.log("This server is running successfully");
-    
+  console.log("This server is running successfully");
+
 })
